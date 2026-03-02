@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Transcend — Transformation Coach</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,500&family=DM+Sans:wght@200;300;400;500&display=swap" rel="stylesheet" />
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          serif: ['Cormorant Garamond', 'serif'],
+          sans: ['DM Sans', 'sans-serif'],
+        },
+      },
+    },
+  }
+</script>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background-color: #0A0806;
+    color: #D4C9A8;
+    overflow-x: hidden;
+  }
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #E8C97A;
+    --cream: #F5EDD6;
+    --cream-dim: rgba(245,237,214,0.65);
+    --cream-muted: rgba(245,237,214,0.38);
+    --dark: #0A0806;
+    --dark2: #110E09;
+    --dark3: #1A150D;
+  }
+
+  /* ─── Utility ─────────────────────────── */
+  .gold { color: var(--gold); }
+  .cream { color: var(--cream); }
+  .muted { color: var(--cream-muted); }
+
+  /* ─── Eyebrow label ───────────────────── */
+  .eyebrow {
+    display: flex; align-items: center; gap: 14px;
+    font-size: 10px; font-weight: 300;
+    letter-spacing: 0.42em; text-transform: uppercase;
+    color: var(--gold);
+  }
+  .eyebrow::before {
+    content: ''; display: inline-block;
+    width: 32px; height: 1px;
+    background: var(--gold); opacity: 0.7;
+  }
+  .eyebrow.centered { justify-content: center; }
+  .eyebrow.centered::before { display: none; }
+
+  /* ─── Buttons ─────────────────────────── */
+  .btn-gold {
+    display: inline-block;
+    background: var(--gold);
+    color: #0A0806;
+    font-size: 10px; font-weight: 500;
+    letter-spacing: 0.28em; text-transform: uppercase;
+    padding: 16px 44px;
+    text-decoration: none;
+    position: relative; overflow: hidden;
+    transition: transform 0.2s;
+    border: none; cursor: pointer;
+  }
+  .btn-gold::after {
+    content: ''; position: absolute; inset: 0;
+    background: var(--gold-light);
+    transform: translateX(-101%);
+    transition: transform 0.35s;
+  }
+  .btn-gold:hover { transform: translateY(-2px); }
+  .btn-gold:hover::after { transform: translateX(0); }
+  .btn-gold-text { position: relative; z-index: 1; }
+
+  .btn-ghost {
+    display: inline-flex; align-items: center; gap: 10px;
+    color: var(--cream-dim);
+    font-size: 10px; font-weight: 300;
+    letter-spacing: 0.28em; text-transform: uppercase;
+    text-decoration: none;
+    transition: color 0.3s;
+  }
+  .btn-ghost:hover { color: var(--gold); }
+  .btn-ghost .arr { transition: transform 0.3s; }
+  .btn-ghost:hover .arr { transform: translateX(5px); }
+
+  /* ─── Nav ─────────────────────────────── */
+  .navbar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 24px 64px;
+    background: linear-gradient(180deg, rgba(10,8,6,0.96) 0%, transparent 100%);
+    backdrop-filter: blur(6px);
+  }
+  .nav-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 26px; font-weight: 300; letter-spacing: 0.15em;
+    color: var(--cream); text-decoration: none;
+  }
+  .nav-logo span { color: var(--gold); }
+  .nav-links { display: flex; gap: 44px; list-style: none; }
+  .nav-links a {
+    font-size: 11px; font-weight: 300;
+    letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--cream-muted); text-decoration: none;
+    transition: color 0.3s;
+  }
+  .nav-links a:hover { color: var(--gold); }
+
+  /* ─── Hero ────────────────────────────── */
+  #hero {
+    min-height: 100vh;
+    display: flex; align-items: center;
+    padding: 0 64px;
+    position: relative; overflow: hidden;
+    background:
+      radial-gradient(ellipse 65% 85% at 62% 50%, rgba(201,168,76,0.07) 0%, transparent 65%),
+      radial-gradient(ellipse 40% 55% at 12% 20%, rgba(201,168,76,0.04) 0%, transparent 60%),
+      linear-gradient(155deg, #0A0806 0%, #140E07 55%, #0A0806 100%);
+  }
+  .hero-content {
+    position: relative; z-index: 2; max-width: 740px; padding-top: 96px;
+    animation: fadeUp 1.2s ease both;
+  }
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(30px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  .hero-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300; line-height: 1.0;
+    font-size: clamp(58px, 8vw, 108px);
+    color: var(--cream);
+  }
+  .hero-title em { font-style: italic; color: var(--gold); }
+  .hero-sub {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(22px, 3vw, 36px);
+    font-weight: 300; font-style: italic;
+    color: var(--cream-muted); letter-spacing: 0.06em;
+  }
+  .hero-desc {
+    font-size: 15px; font-weight: 200; line-height: 1.95;
+    color: var(--cream-muted); max-width: 520px;
+  }
+  .hero-pillars {
+    position: absolute; right: 80px; top: 50%; transform: translateY(-50%);
+    display: flex; flex-direction: column; gap: 32px; z-index: 2;
+    animation: fadeUp 1.8s ease both;
+  }
+  .hero-pillar {
+    display: flex; align-items: center; gap: 16px;
+    opacity: 0.6; transition: opacity 0.3s;
+  }
+  .hero-pillar:hover { opacity: 1; }
+  .pillar-box {
+    width: 52px; height: 52px;
+    border: 1px solid rgba(201,168,76,0.28);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+  }
+  .pillar-label {
+    font-size: 10px; letter-spacing: 0.28em;
+    text-transform: uppercase; color: var(--cream-muted);
+  }
+  .hero-scroll {
+    position: absolute; bottom: 36px; left: 50%; transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 12px;
+    animation: floatBounce 2.5s ease-in-out infinite; z-index: 2;
+  }
+  @keyframes floatBounce {
+    0%,100% { transform: translateX(-50%) translateY(0); }
+    50%      { transform: translateX(-50%) translateY(10px); }
+  }
+  .hero-scroll span {
+    font-size: 9px; letter-spacing: 0.38em;
+    text-transform: uppercase; color: var(--cream-muted);
+  }
+  .scroll-bar {
+    width: 1px; height: 40px;
+    background: linear-gradient(180deg, var(--gold), transparent);
+  }
+
+  /* ─── Sections ────────────────────────── */
+  .sec { padding: 112px 64px; }
+  .sec-dark  { background: var(--dark2); }
+  .sec-darker{ background: var(--dark);  }
+
+  .sec-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300; line-height: 1.05;
+    font-size: clamp(40px, 5vw, 70px);
+    color: var(--cream);
+  }
+  .sec-title em { font-style: italic; color: var(--gold); }
+
+  .gold-hr { height: 1px; background: var(--gold); margin: 20px 0; }
+  .gold-hr.mx { margin-left:auto; margin-right:auto; }
+  .gold-full-hr { height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); }
+
+  /* ─── About portrait ──────────────────── */
+  .portrait-wrap {
+    position: relative;
+    aspect-ratio: 3/4;
+    max-width: 440px;
+    background: linear-gradient(135deg, #221A0F, #150F07);
+    overflow: hidden;
+  }
+  .portrait-wrap::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(circle at 40% 30%, rgba(201,168,76,0.13) 0%, transparent 65%);
+  }
+  .portrait-icon-wrap {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 12px; opacity: 0.38;
+  }
+  .portrait-badge {
+    position: absolute;
+    bottom: -24px; right: -20px;
+    width: 140px; height: 140px;
+    background: var(--gold);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+  }
+  .badge-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 54px; font-weight: 300;
+    color: #0A0806; line-height: 1;
+  }
+  .badge-lbl {
+    font-size: 9px; letter-spacing: 0.16em;
+    text-transform: uppercase; color: rgba(10,8,6,0.62);
+    text-align: center; line-height: 1.5;
+  }
+
+  /* ─── Stats ───────────────────────────── */
+  .stats-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    border: 1px solid rgba(201,168,76,0.12);
+  }
+  .stat-cell {
+    background: var(--dark3);
+    padding: 48px 24px; text-align: center;
+    border-right: 1px solid rgba(201,168,76,0.1);
+  }
+  .stat-cell:last-child { border-right: none; }
+  .stat-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 62px; font-weight: 300;
+    color: var(--gold); line-height: 1;
+  }
+  .stat-lbl {
+    font-size: 9px; letter-spacing: 0.35em;
+    text-transform: uppercase; color: var(--cream-muted);
+    margin-top: 8px;
+  }
+
+  /* ─── Pillar mini card ─────────────────── */
+  .pillar-mini {
+    border: 1px solid rgba(201,168,76,0.13);
+    background: var(--dark3);
+    padding: 28px 20px; text-align: center;
+    position: relative; overflow: hidden;
+    transition: border-color 0.4s;
+  }
+  .pillar-mini::before {
+    content: ''; position: absolute; inset: 0;
+    background: rgba(201,168,76,0.07);
+    transform: translateY(101%); transition: transform 0.4s;
+  }
+  .pillar-mini:hover { border-color: rgba(201,168,76,0.5); }
+  .pillar-mini:hover::before { transform: translateY(0); }
+  .pillar-mini-icon { font-size: 28px; margin-bottom: 10px; position: relative; z-index:1; }
+  .pillar-mini h4 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px; font-weight: 300;
+    color: var(--cream); position: relative; z-index:1;
+  }
+
+  /* ─── Service cards ───────────────────── */
+  .services-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 2px; background: rgba(201,168,76,0.06);
+  }
+  .svc-card {
+    background: var(--dark3);
+    padding: 48px 36px;
+    position: relative; overflow: hidden;
+    transition: transform 0.3s;
+    border: 1px solid transparent;
+  }
+  .svc-card::before {
+    content: ''; position: absolute;
+    top:0; left:0; width:2px; height:0;
+    background: var(--gold); transition: height 0.5s;
+  }
+  .svc-card:hover { transform: translateY(-5px); border-color: rgba(201,168,76,0.2); }
+  .svc-card:hover::before { height: 100%; }
+  .svc-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 80px; font-weight: 300;
+    color: rgba(201,168,76,0.07); line-height: 1;
+    margin-bottom: 8px;
+  }
+  .svc-icon { font-size: 36px; margin-bottom: 18px; }
+  .svc-card h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 26px; font-weight: 300;
+    color: var(--cream); margin-bottom: 14px;
+  }
+  .svc-card p {
+    font-size: 14px; font-weight: 200;
+    line-height: 1.95; color: var(--cream-muted);
+  }
+
+  /* ─── Testimonial slider ──────────────── */
+  .slider-mask {
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 8%, black 92%, transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0%, black 8%, black 92%, transparent 100%);
+  }
+  .slider-track {
+    display: flex; gap: 24px; width: max-content;
+    animation: slideLeft 70s linear infinite;
+  }
+  .slider-track:hover { animation-play-state: paused; }
+  @keyframes slideLeft {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+  .t-card {
+    width: 320px; flex-shrink: 0;
+    background: var(--dark2);
+    border: 1px solid rgba(201,168,76,0.1);
+    padding: 32px 28px;
+    position: relative; transition: border-color 0.3s;
+  }
+  .t-card:hover { border-color: rgba(201,168,76,0.36); }
+  .t-card::before {
+    content: '"';
+    position: absolute; top: 14px; right: 20px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 72px; color: var(--gold);
+    opacity: 0.1; line-height: 1;
+  }
+  .t-avatar {
+    width: 50px; height: 50px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px; color: #0A0806; flex-shrink: 0;
+  }
+  .t-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px; font-weight: 400;
+    color: var(--cream);
+  }
+  .t-role { font-size: 11px; letter-spacing: 0.12em; color: var(--cream-muted); }
+  .t-stars { color: var(--gold); font-size: 12px; letter-spacing: 3px; margin-bottom: 14px; }
+  .t-text { font-size: 13.5px; font-weight: 200; line-height: 1.9; color: var(--cream-muted); }
+  .t-tag {
+    display: inline-block; margin-top: 18px;
+    padding: 4px 12px;
+    border: 1px solid rgba(201,168,76,0.25);
+    font-size: 9px; letter-spacing: 0.25em;
+    text-transform: uppercase; color: var(--gold);
+  }
+
+  /* ─── Book form ───────────────────────── */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .form-full { grid-column: 1 / -1; }
+  .form-lbl {
+    display: block; margin-bottom: 8px;
+    font-size: 9px; letter-spacing: 0.38em;
+    text-transform: uppercase; color: var(--gold);
+  }
+  .form-inp {
+    width: 100%;
+    background: var(--dark3);
+    border: 1px solid rgba(201,168,76,0.15);
+    color: var(--cream);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px; font-weight: 200;
+    padding: 15px 18px; outline: none;
+    transition: border-color 0.3s;
+    appearance: none;
+  }
+  .form-inp:focus { border-color: var(--gold); }
+  .form-inp::placeholder { color: var(--cream-muted); }
+  .form-inp option { background: var(--dark3); color: var(--cream); }
+
+  /* ─── Reveal animation ─────────────────── */
+  .reveal { opacity:0; transform:translateY(26px); transition: opacity 0.8s ease, transform 0.8s ease; }
+  .reveal.in { opacity:1; transform:translateY(0); }
+  .d1 { transition-delay:0.1s; }
+  .d2 { transition-delay:0.2s; }
+  .d3 { transition-delay:0.3s; }
+  .d4 { transition-delay:0.4s; }
+
+  /* ─── Footer ──────────────────────────── */
+  footer { background: var(--dark2); border-top: 1px solid rgba(201,168,76,0.1); }
+
+  @media (max-width: 900px) {
+    .navbar { padding: 18px 20px; }
+    .nav-links { display:none; }
+    .sec { padding: 80px 24px; }
+    #hero { padding: 0 24px; }
+    .hero-pillars { display: none; }
+    .services-grid { grid-template-columns: 1fr; }
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+    .form-grid { grid-template-columns: 1fr; }
+    .form-full { grid-column: 1; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════
+     NAV
+══════════════════════════════════════════════════ -->
+<nav class="navbar">
+  <a href="#hero" class="nav-logo">TRANS<span>CEND</span></a>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#approach">Approach</a></li>
+    <li><a href="#testimonials">Stories</a></li>
+    <li><a href="#book">Book</a></li>
+  </ul>
+  <a href="#book" class="btn-gold"><span class="btn-gold-text">Book Session</span></a>
+</nav>
+
+
+<!-- ══════════════════════════════════════════════
+     HERO
+══════════════════════════════════════════════════ -->
+<section id="hero">
+  <div class="hero-content">
+    <div class="eyebrow" style="margin-bottom:28px;">Transformation Coaching</div>
+    <h1 class="hero-title" style="margin-bottom:16px;">
+      Become<br/>Who You Were<br/><em>Meant to Be</em>
+    </h1>
+    <p class="hero-sub" style="margin-bottom:28px;">Mind &nbsp;·&nbsp; Body &nbsp;·&nbsp; Soul</p>
+    <p class="hero-desc" style="margin-bottom:48px;">
+      A transformation coach doesn't simply change habits — they architect an entirely new version of you. Through deep, integrated work across three sacred pillars, we dissolve the barriers between who you are today and who you are truly destined to become.
+    </p>
+    <div style="display:flex;gap:28px;align-items:center;flex-wrap:wrap;">
+      <a href="#book" class="btn-gold"><span class="btn-gold-text">Book a Session</span></a>
+      <a href="#about" class="btn-ghost">Discover My Approach <span class="arr">→</span></a>
+    </div>
+  </div>
+
+  <div class="hero-pillars">
+    <div class="hero-pillar">
+      <div class="pillar-box">🧠</div>
+      <span class="pillar-label">Mind</span>
+    </div>
+    <div class="hero-pillar">
+      <div class="pillar-box">💪</div>
+      <span class="pillar-label">Body</span>
+    </div>
+    <div class="hero-pillar">
+      <div class="pillar-box">✨</div>
+      <span class="pillar-label">Soul</span>
+    </div>
+  </div>
+
+  <div class="hero-scroll">
+    <span>Scroll</span>
+    <div class="scroll-bar"></div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════
+     ABOUT
+══════════════════════════════════════════════════ -->
+<section id="about" class="sec sec-dark">
+  <div style="max-width:1280px; margin:0 auto;">
+
+    <!-- Header -->
+    <div class="reveal" style="margin-bottom:60px;">
+      <div class="eyebrow" style="margin-bottom:18px;">About Me</div>
+      <h2 class="sec-title">
+        Guiding You Toward<br/><em>Your Greatest Self</em>
+      </h2>
+    </div>
+
+    <!-- Two-col grid -->
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:80px; align-items:center;">
+
+      <!-- Portrait -->
+      <div class="reveal" style="position:relative;">
+        <div class="portrait-wrap">
+          <div class="portrait-icon-wrap">
+            <span style="font-size:80px;">🧘</span>
+            <span style="font-size:10px;letter-spacing:0.3em;text-transform:uppercase;color:var(--cream-muted);">Your Photo Here</span>
+          </div>
+          <div style="position:absolute;bottom:0;left:0;right:0;height:120px;background:linear-gradient(transparent,var(--dark2));"></div>
+        </div>
+        <div class="portrait-badge">
+          <div class="badge-num">30</div>
+          <div class="badge-lbl">Years of<br/>Experience</div>
+        </div>
+      </div>
+
+      <!-- Text -->
+      <div class="reveal d2">
+        <div class="eyebrow" style="margin-bottom:16px;">My Story</div>
+        <h3 class="sec-title" style="font-size:clamp(28px,3.5vw,46px); margin-bottom:10px;">
+          I Help You <em>Evolve</em>
+        </h3>
+        <div class="gold-hr" style="width:56px; margin-bottom:28px;"></div>
+
+        <div style="display:flex;flex-direction:column;gap:18px; margin-bottom:36px;">
+          <p style="font-size:15px;font-weight:200;line-height:1.95;color:var(--cream-muted);">
+            For over <strong style="color:var(--cream);font-weight:400;">30 years</strong>, I have dedicated my life to the sacred work of human transformation. I don't believe in surface-level fixes — I believe in lasting, bone-deep change that ripples through every area of your life.
+          </p>
+          <p style="font-size:15px;font-weight:200;line-height:1.95;color:var(--cream-muted);">
+            True transformation requires <strong style="color:var(--cream);font-weight:400;">alignment across mind, body, and soul</strong>. When one is out of harmony, all three suffer. When all three align, you become unstoppable.
+          </p>
+          <p style="font-size:15px;font-weight:200;line-height:1.95;color:var(--cream-muted);">
+            I have guided <strong style="color:var(--cream);font-weight:400;">over 1,000 individuals</strong> — executives, athletes, artists, parents, and seekers — through some of the most profound shifts of their lives.
+          </p>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+          <div class="pillar-mini reveal d1">
+            <div class="pillar-mini-icon">🧠</div>
+            <h4>Mind</h4>
+          </div>
+          <div class="pillar-mini reveal d2">
+            <div class="pillar-mini-icon">💪</div>
+            <h4>Body</h4>
+          </div>
+          <div class="pillar-mini reveal d3">
+            <div class="pillar-mini-icon">✨</div>
+            <h4>Soul</h4>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid reveal" style="margin-top:88px;">
+      <div class="stat-cell">
+        <div class="stat-num">30+</div>
+        <div class="stat-lbl">Years Experience</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-num">1K+</div>
+        <div class="stat-lbl">Lives Transformed</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-num">98%</div>
+        <div class="stat-lbl">Client Satisfaction</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-num">∞</div>
+        <div class="stat-lbl">Your Potential</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════
+     APPROACH
+══════════════════════════════════════════════════ -->
+<section id="approach" class="sec sec-darker">
+  <div style="max-width:1280px; margin:0 auto;">
+
+    <div class="reveal" style="text-align:center; max-width:600px; margin:0 auto 64px;">
+      <div class="eyebrow centered" style="margin-bottom:18px;">My Approach</div>
+      <h2 class="sec-title" style="margin-bottom:20px;">
+        How I Will <em>Transform</em> You
+      </h2>
+      <p style="font-size:15px;font-weight:200;line-height:1.95;color:var(--cream-muted);">
+        Each pillar is carefully woven together to create an integrated, whole-person evolution that lasts a lifetime.
+      </p>
+    </div>
+
+    <div class="services-grid">
+      <div class="svc-card reveal">
+        <div class="svc-num">01</div>
+        <div class="svc-icon">🧠</div>
+        <h3>Mental Mastery</h3>
+        <p>We reprogram limiting beliefs, dismantle self-sabotage patterns, and cultivate an unshakeable mindset through neurolinguistic techniques and mindfulness practice. Your mind becomes your greatest ally.</p>
+      </div>
+      <div class="svc-card reveal d1">
+        <div class="svc-num">02</div>
+        <div class="svc-icon">💪</div>
+        <h3>Physical Embodiment</h3>
+        <p>Your body holds the map to your transformation. We build strength, vitality, and presence through intentional movement, breathwork, and somatic practices that honor both science and wisdom.</p>
+      </div>
+      <div class="svc-card reveal d2">
+        <div class="svc-num">03</div>
+        <div class="svc-icon">✨</div>
+        <h3>Soul Alignment</h3>
+        <p>True fulfillment comes from living aligned with your deepest values and authentic purpose. We explore your core essence, clarify your direction, and build a spiritual foundation that sustains all growth.</p>
+      </div>
+      <div class="svc-card reveal d1">
+        <div class="svc-num">04</div>
+        <div class="svc-icon">🎯</div>
+        <h3>Life Design</h3>
+        <p>With clarity and inner strength established, we architect your ideal life — relationships, career, habits, and daily rituals all designed to support your highest version and accelerate your progress.</p>
+      </div>
+      <div class="svc-card reveal d2">
+        <div class="svc-num">05</div>
+        <div class="svc-icon">🔗</div>
+        <h3>Integration Work</h3>
+        <p>Transformation lives in the everyday. We build robust systems, accountability structures, and integration practices so your breakthroughs become your permanent new baseline — your new normal.</p>
+      </div>
+      <div class="svc-card reveal d3">
+        <div class="svc-num">06</div>
+        <div class="svc-icon">🌿</div>
+        <h3>Ongoing Evolution</h3>
+        <p>Growth is not a destination but a lifelong journey. I walk beside you celebrating milestones, navigating setbacks, and continuously elevating your ceiling of what is truly possible for you.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════
+     TESTIMONIALS
+══════════════════════════════════════════════════ -->
+<section id="testimonials" class="sec sec-dark" style="padding-bottom:80px; overflow:hidden;">
+  <div style="max-width:1280px; margin:0 auto; padding:0 64px 0;">
+    <div class="reveal" style="text-align:center; margin-bottom:56px;">
+      <div class="eyebrow centered" style="margin-bottom:18px;">Transformation Stories</div>
+      <h2 class="sec-title" style="margin-bottom:16px;">Voices of <em>Change</em></h2>
+      <div class="gold-hr mx" style="width:56px; margin-bottom:20px;"></div>
+      <p style="font-size:15px;font-weight:200;line-height:1.95;color:var(--cream-muted);max-width:440px;margin:0 auto;">
+        Real people. Real transformation. Real results across every dimension of life.
+      </p>
+    </div>
+  </div>
+
+  <div class="slider-mask">
+    <div class="slider-track" id="sliderTrack"></div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════
+     BOOK NOW
+══════════════════════════════════════════════════ -->
+<section id="book" class="sec sec-darker" style="position:relative;overflow:hidden;">
+  <div style="position:absolute;inset:0;background:radial-gradient(ellipse 60% 70% at 50% 0%, rgba(201,168,76,0.04) 0%, transparent 70%);pointer-events:none;"></div>
+
+  <div style="max-width:880px; margin:0 auto; text-align:center; position:relative; z-index:1;">
+
+    <div class="reveal">
+      <div class="eyebrow centered" style="margin-bottom:18px;">Book a Session</div>
+      <h2 class="sec-title" style="margin-bottom:14px;">Begin Your <em>Transformation</em></h2>
+      <div class="gold-hr mx" style="width:56px; margin-bottom:20px;"></div>
+      <p style="font-size:15px;font-weight:200;line-height:1.95;color:var(--cream-muted);max-width:520px;margin:0 auto 52px;">
+        Every profound journey begins with a single courageous step. Reach out and let's explore how we can unlock the extraordinary life awaiting you.
+      </p>
+    </div>
+
+    <!-- Form -->
+    <div id="bookForm" class="reveal" style="text-align:left;">
+      <div class="form-grid">
+        <div>
+          <label class="form-lbl">Full Name</label>
+          <input id="fname" type="text" placeholder="Your full name" class="form-inp" />
+        </div>
+        <div>
+          <label class="form-lbl">Email Address</label>
+          <input id="femail" type="email" placeholder="your@email.com" class="form-inp" />
+        </div>
+        <div>
+          <label class="form-lbl">Phone (Optional)</label>
+          <input id="fphone" type="tel" placeholder="+1 (555) 000-0000" class="form-inp" />
+        </div>
+        <div>
+          <label class="form-lbl">Area of Focus</label>
+          <select id="farea" class="form-inp">
+            <option value="" disabled selected>What do you need help with?</option>
+            <option>Mind — Mental clarity, beliefs &amp; mindset</option>
+            <option>Body — Physical health, energy &amp; vitality</option>
+            <option>Soul — Purpose, meaning &amp; alignment</option>
+            <option>Relationships &amp; Connection</option>
+            <option>Career &amp; Life Direction</option>
+            <option>Complete Holistic Transformation</option>
+            <option>Not sure yet — need guidance</option>
+          </select>
+        </div>
+        <div class="form-full">
+          <label class="form-lbl">Tell Me About You</label>
+          <textarea id="fdesc" rows="6" placeholder="Share where you are now, what challenges you face, and what transformation you are seeking. The more you share, the better I can prepare for our first conversation." class="form-inp" style="resize:vertical;"></textarea>
+        </div>
+        <div class="form-full" style="text-align:center; margin-top:12px;">
+          <button class="btn-gold" onclick="submitForm()"><span class="btn-gold-text">Send My Request &nbsp;→</span></button>
+        </div>
+        <p class="form-full" style="text-align:center;font-size:12px;font-weight:200;color:var(--cream-muted);">
+          I personally review every message and respond within 24–48 hours. All conversations are completely confidential.
+        </p>
+      </div>
+    </div>
+
+    <!-- Success -->
+    <div id="formSuccess" style="display:none; padding:60px 40px; border:1px solid rgba(201,168,76,0.22); text-align:center; opacity:0; transition:opacity 0.8s;">
+      <div style="font-size:52px; margin-bottom:20px;">✨</div>
+      <h3 style="font-family:'Cormorant Garamond',serif;font-size:38px;font-weight:300;color:var(--gold);margin-bottom:14px;">Your Journey Begins</h3>
+      <p style="font-size:15px;font-weight:200;color:var(--cream-muted);">Thank you for reaching out. I will respond within 24–48 hours to discuss how we can work together toward your transformation.</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════
+     FOOTER
+══════════════════════════════════════════════════ -->
+<footer style="padding: 52px 64px 36px;">
+  <div style="max-width:1280px;margin:0 auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:24px;margin-bottom:36px;">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:300;color:var(--cream);letter-spacing:0.08em;">
+        TRANS<span style="color:var(--gold);">CEND</span>
+      </div>
+      <ul style="display:flex;gap:36px;list-style:none;flex-wrap:wrap;">
+        <li><a href="#hero"   style="font-size:10px;letter-spacing:0.25em;text-transform:uppercase;color:var(--cream-muted);text-decoration:none;transition:color 0.3s;" onmouseover="this.style.color='#C9A84C'" onmouseout="this.style.color='var(--cream-muted)'">Home</a></li>
+        <li><a href="#about"  style="font-size:10px;letter-spacing:0.25em;text-transform:uppercase;color:var(--cream-muted);text-decoration:none;" onmouseover="this.style.color='#C9A84C'" onmouseout="this.style.color='var(--cream-muted)'">About</a></li>
+        <li><a href="#approach" style="font-size:10px;letter-spacing:0.25em;text-transform:uppercase;color:var(--cream-muted);text-decoration:none;" onmouseover="this.style.color='#C9A84C'" onmouseout="this.style.color='var(--cream-muted)'">Approach</a></li>
+        <li><a href="#testimonials" style="font-size:10px;letter-spacing:0.25em;text-transform:uppercase;color:var(--cream-muted);text-decoration:none;" onmouseover="this.style.color='#C9A84C'" onmouseout="this.style.color='var(--cream-muted)'">Stories</a></li>
+        <li><a href="#book"   style="font-size:10px;letter-spacing:0.25em;text-transform:uppercase;color:var(--cream-muted);text-decoration:none;" onmouseover="this.style.color='#C9A84C'" onmouseout="this.style.color='var(--cream-muted)'">Book</a></li>
+      </ul>
+    </div>
+    <div class="gold-full-hr" style="margin-bottom:28px;"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;">
+      <p style="font-size:11px;letter-spacing:0.1em;color:var(--cream-muted);font-weight:200;">© 2025 Transcend Transformation Coaching · All Rights Reserved</p>
+      <div style="display:flex;gap:14px;">
+        <a href="#" style="width:36px;height:36px;border:1px solid rgba(201,168,76,0.2);display:flex;align-items:center;justify-content:center;color:var(--cream-muted);text-decoration:none;font-size:12px;transition:all 0.3s;" onmouseover="this.style.color='#C9A84C';this.style.borderColor='rgba(201,168,76,0.5)'" onmouseout="this.style.color='var(--cream-muted)';this.style.borderColor='rgba(201,168,76,0.2)'">in</a>
+        <a href="#" style="width:36px;height:36px;border:1px solid rgba(201,168,76,0.2);display:flex;align-items:center;justify-content:center;color:var(--cream-muted);text-decoration:none;font-size:12px;transition:all 0.3s;" onmouseover="this.style.color='#C9A84C';this.style.borderColor='rgba(201,168,76,0.5)'" onmouseout="this.style.color='var(--cream-muted)';this.style.borderColor='rgba(201,168,76,0.2)'">ig</a>
+        <a href="#" style="width:36px;height:36px;border:1px solid rgba(201,168,76,0.2);display:flex;align-items:center;justify-content:center;color:var(--cream-muted);text-decoration:none;font-size:12px;transition:all 0.3s;" onmouseover="this.style.color='#C9A84C';this.style.borderColor='rgba(201,168,76,0.5)'" onmouseout="this.style.color='var(--cream-muted)';this.style.borderColor='rgba(201,168,76,0.2)'">yt</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+
+<!-- ══════════════════════════════════════════════
+     JS
+══════════════════════════════════════════════════ -->
+<script>
+// ── Testimonials ───────────────────────────────
+const testimonials = [
+  { n:'Sarah M.',   r:'Executive, 42',      a:'S', bg:'#8B7355', tag:'Mind', s:5, t:'Working with this coach fundamentally changed how I lead my team and live my life. The mental clarity I have gained is worth every single moment invested.' },
+  { n:'James R.',   r:'Athlete, 28',        a:'J', bg:'#5E7B6B', tag:'Body', s:5, t:'I came seeking physical performance and left with a completely transformed relationship with my body, my purpose, and my potential. Truly life-changing.' },
+  { n:'Amara K.',   r:'Artist, 35',         a:'A', bg:'#7B5E8B', tag:'Soul', s:5, t:'I was creatively blocked and spiritually lost. This journey reconnected me to my authentic self in ways I never thought possible for someone like me.' },
+  { n:'David L.',   r:'Entrepreneur, 50',   a:'D', bg:'#8B5E5E', tag:'Mind', s:5, t:'Thirty years of experience is evident in every session. The depth of insight and precision of guidance is unlike anything I have ever encountered.' },
+  { n:'Priya S.',   r:'Doctor, 38',         a:'P', bg:'#5E7B8B', tag:'Body', s:5, t:'I help others heal every day but had neglected my own wellbeing for years. This coaching gave me the tools and the permission to prioritize myself.' },
+  { n:'Marcus T.',  r:'Father of 3, 45',    a:'M', bg:'#8B7B5E', tag:'Soul', s:5, t:'Transformation coaching is not for people in crisis — it is for people who know they are capable of so much more and want to finally live it.' },
+  { n:'Elena V.',   r:'Teacher, 33',        a:'E', bg:'#5E8B7B', tag:'Mind', s:5, t:'The breakthrough I had in three sessions took me years of therapy to approach. The holistic method addresses what other approaches consistently miss.' },
+  { n:'Robert C.',  r:'Retired Military, 55',a:'R',bg:'#7B6B5E', tag:'Body', s:5, t:'After decades of physical and mental strain, I needed someone who understood transformation at its deepest level. I found that and so much more.' },
+  { n:'Nadia O.',   r:'Designer, 29',       a:'N', bg:'#5E5E8B', tag:'Soul', s:5, t:'Young, ambitious, and completely burned out at 29. This coaching helped me redesign my entire relationship with ambition and authentic purpose.' },
+  { n:'Thomas A.',  r:'CEO, 48',            a:'T', bg:'#6B8B5E', tag:'Mind', s:5, t:'The ROI on this investment has been immeasurable. A clearer mind, a stronger body, and a more centered spirit has made me a better leader and father.' },
+  { n:'Lisa W.',    r:'Therapist, 41',      a:'L', bg:'#8B5E7B', tag:'Soul', s:5, t:'As someone in the helping profession I was skeptical. The depth of self-knowledge this coaching unlocked has made me a profoundly better practitioner.' },
+  { n:'Kevin B.',   r:'Writer, 37',         a:'K', bg:'#5E8B6B', tag:'Body', s:5, t:'I came with a creative block and left with a completely new relationship with my body, my stories, and my sense of what is truly possible in this life.' },
+  { n:'Fatima H.',  r:'Mother & Coach, 44', a:'F', bg:'#8B8B5E', tag:'Mind', s:5, t:'This coaching gave me the language, the practices, and the courage to finally live a life that matches my deepest values and sense of authentic self.' },
+  { n:'Daniel M.',  r:'Surgeon, 52',        a:'D', bg:'#5E8B8B', tag:'Body', s:5, t:'High-performing professionals sacrifice everything for success. This coaching taught me that true excellence must include the whole person — always.' },
+  { n:'Sofia A.',   r:'Dancer, 26',         a:'S', bg:'#8B5E65', tag:'Soul', s:5, t:'At 26 I thought I knew who I was. The coaching process cracked me open in the best possible way, revealing a depth and purpose I never knew existed.' },
+  { n:'Andre P.',   r:'Coach, 47',          a:'A', bg:'#6B5E8B', tag:'Mind', s:5, t:'Even as a coach myself, I needed someone operating at a higher level. The experience has elevated both my personal life and my ability to guide others.' },
+  { n:'Maya S.',    r:'Startup Founder, 31',a:'M', bg:'#8B7B5E', tag:'Body', s:5, t:'The energy and mental bandwidth gained through this work has been the single most impactful investment in my startup journey, without question.' },
+  { n:'George F.',  r:'Grandfather, 63',    a:'G', bg:'#5E7B5E', tag:'Soul', s:5, t:'At 63 I was told transformation takes a lifetime. I changed more in six months of this coaching than in the previous twenty years combined.' },
+  { n:'Hannah J.',  r:'Nurse, 34',          a:'H', bg:'#7B5E8B', tag:'Mind', s:5, t:'I gave so much to others that I had forgotten who I was. This work gave me back to myself and showed me how to sustain that without any guilt.' },
+  { n:'Carlos E.',  r:'Musician, 39',       a:'C', bg:'#8B6B7B', tag:'Soul', s:5, t:'Transformation is not about becoming something new — it is about removing everything that was never truly you. This coaching mastered that distinction.' },
+];
+
+function buildSlider() {
+  const track = document.getElementById('sliderTrack');
+  const all = [...testimonials, ...testimonials];
+  track.innerHTML = all.map(t => `
+    <div class="t-card">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px;">
+        <div class="t-avatar" style="background:${t.bg};">${t.a}</div>
+        <div>
+          <div class="t-name">${t.n}</div>
+          <div class="t-role">${t.r}</div>
+        </div>
+      </div>
+      <div class="t-stars">${'★'.repeat(t.s)}</div>
+      <p class="t-text">${t.t}</p>
+      <div class="t-tag">${t.tag}</div>
+    </div>
+  `).join('');
+}
+buildSlider();
+
+// ── Scroll Reveal ──────────────────────────────
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); });
+}, { threshold: 0.08 });
+document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+// ── Smooth nav ─────────────────────────────────
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    const id = a.getAttribute('href');
+    const el = document.querySelector(id);
+    if (el) { e.preventDefault(); el.scrollIntoView({ behavior:'smooth' }); }
+  });
+});
+
+// ── Form submit ────────────────────────────────
+function submitForm() {
+  const name  = document.getElementById('fname').value.trim();
+  const email = document.getElementById('femail').value.trim();
+  const area  = document.getElementById('farea').value;
+  const desc  = document.getElementById('fdesc').value.trim();
+  if (!name || !email || !area || !desc) {
+    alert('Please fill in all required fields.'); return;
+  }
+  const form = document.getElementById('bookForm');
+  const suc  = document.getElementById('formSuccess');
+  form.style.opacity = '0'; form.style.transition = 'opacity 0.4s';
+  setTimeout(() => {
+    form.style.display = 'none';
+    suc.style.display = 'block';
+    setTimeout(() => { suc.style.opacity = '1'; }, 30);
+  }, 420);
+}
+</script>
+</body>
+</html>
