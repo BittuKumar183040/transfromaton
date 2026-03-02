@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Lumina — Transformation Coach</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Outfit:wght@200;300;400;500;600&display=swap" rel="stylesheet"/>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: {
+        serif: ['Playfair Display','serif'],
+        sans:  ['Outfit','sans-serif'],
+      },
+      colors: {
+        forest: { DEFAULT:'#1C3A2E', light:'#2A5242', pale:'#EBF2EE' },
+        terra:  { DEFAULT:'#C4622D', light:'#D97B47', pale:'#FAF0E8' },
+        sage:   { DEFAULT:'#7A9E8E', light:'#A8C5B8' },
+        ink:    { DEFAULT:'#1A1A1A' },
+        paper:  { DEFAULT:'#FAF7F2', warm:'#F3EDE3' },
+      },
+      animation: {
+        marquee: 'marquee 65s linear infinite',
+        'fade-up': 'fadeUp 0.9s ease both',
+        spin3d: 'spin3d 20s linear infinite',
+      },
+      keyframes: {
+        marquee:  { '0%':{ transform:'translateX(0)' }, '100%':{ transform:'translateX(-50%)' } },
+        fadeUp:   { '0%':{ opacity:'0', transform:'translateY(28px)' }, '100%':{ opacity:'1', transform:'translateY(0)' } },
+        spin3d:   { '0%':{ transform:'rotate(0deg)' }, '100%':{ transform:'rotate(360deg)' } },
+      },
+    },
+  },
+}
+</script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background: #FAF7F2;
+  color: #1A1A1A;
+  overflow-x: hidden;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #FAF7F2; }
+::-webkit-scrollbar-thumb { background: #1C3A2E; border-radius: 3px; }
+
+/* ── Nav ── */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 60px;
+  background: rgba(250, 247, 242, 0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(28,58,46,0.08);
+  transition: padding 0.3s;
+}
+.nav-logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 24px; font-weight: 700;
+  color: #1C3A2E; text-decoration: none; letter-spacing: -0.02em;
+}
+.nav-logo span { color: #C4622D; }
+.nav-links { display: flex; gap: 36px; list-style: none; }
+.nav-links a {
+  font-size: 13px; font-weight: 400; letter-spacing: 0.02em;
+  color: rgba(26,26,26,0.55); text-decoration: none;
+  transition: color 0.25s;
+}
+.nav-links a:hover { color: #1C3A2E; }
+.nav-btn {
+  background: #1C3A2E; color: #FAF7F2;
+  font-family: 'Outfit', sans-serif; font-size: 12px;
+  font-weight: 500; letter-spacing: 0.06em;
+  padding: 11px 28px; text-decoration: none;
+  border-radius: 40px; transition: background 0.3s, transform 0.2s;
+}
+.nav-btn:hover { background: #C4622D; transform: translateY(-1px); }
+
+/* ── Hero ── */
+#hero {
+  min-height: 100vh;
+  display: grid; grid-template-columns: 1fr 1fr;
+  padding-top: 80px;
+  background: #FAF7F2;
+  overflow: hidden;
+  position: relative;
+}
+.hero-left {
+  display: flex; flex-direction: column; justify-content: center;
+  padding: 80px 60px 80px 60px;
+  position: relative; z-index: 2;
+}
+.hero-right {
+  position: relative; overflow: hidden;
+  background: #1C3A2E;
+}
+.hero-right-inner {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 70% 60% at 60% 40%, rgba(196,98,45,0.25) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 70% at 20% 80%, rgba(122,158,142,0.3) 0%, transparent 60%),
+    #1C3A2E;
+  display: flex; flex-direction: column; justify-content: flex-end;
+  padding: 48px;
+}
+
+.hero-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: #EBF2EE; color: #1C3A2E;
+  font-size: 11px; font-weight: 500; letter-spacing: 0.12em;
+  text-transform: uppercase; padding: 8px 16px; border-radius: 40px;
+  margin-bottom: 32px; width: fit-content;
+}
+.hero-tag::before { content:''; width:6px; height:6px; border-radius:50%; background:#C4622D; }
+
+.hero-h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(48px, 5.5vw, 80px);
+  font-weight: 900; line-height: 1.0;
+  color: #1A1A1A; letter-spacing: -0.03em;
+  margin-bottom: 28px;
+}
+.hero-h1 em { font-style: italic; color: #C4622D; }
+
+.hero-desc {
+  font-size: 16px; font-weight: 300; line-height: 1.85;
+  color: rgba(26,26,26,0.6); max-width: 460px;
+  margin-bottom: 44px;
+}
+
+.hero-actions { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+
+.btn-fill {
+  background: #C4622D; color: #fff;
+  font-size: 13px; font-weight: 500; letter-spacing: 0.04em;
+  padding: 14px 36px; border-radius: 40px;
+  text-decoration: none; border: none; cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.btn-fill:hover { background: #D97B47; transform: translateY(-2px); }
+
+.btn-border {
+  background: transparent; color: #1C3A2E;
+  font-size: 13px; font-weight: 500; letter-spacing: 0.04em;
+  padding: 13px 36px; border-radius: 40px;
+  text-decoration: none;
+  border: 2px solid rgba(28,58,46,0.25);
+  transition: border-color 0.3s, color 0.3s, transform 0.2s;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.btn-border:hover { border-color: #1C3A2E; transform: translateY(-2px); }
+
+/* Floating stats on hero */
+.hero-stats {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+}
+.h-stat {
+  background: rgba(250,247,242,0.1); border: 1px solid rgba(250,247,242,0.18);
+  border-radius: 16px; padding: 20px 24px; backdrop-filter: blur(6px);
+}
+.h-stat-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 40px; font-weight: 700; color: #FAF7F2;
+  line-height: 1; margin-bottom: 4px;
+}
+.h-stat-num span { font-size: 24px; color: #C4622D; }
+.h-stat-label { font-size: 12px; font-weight: 300; color: rgba(250,247,242,0.6); }
+
+/* Rotating badge */
+.hero-badge {
+  position: absolute; top: 40px; right: 40px;
+  width: 110px; height: 110px;
+  display: flex; align-items: center; justify-content: center;
+}
+.badge-ring {
+  position: absolute; inset: 0;
+  border: 1.5px dashed rgba(250,247,242,0.4); border-radius: 50%;
+  animation: spin3d 18s linear infinite;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px; letter-spacing: 0.25em;
+  text-transform: uppercase; color: rgba(250,247,242,0.5);
+}
+.badge-center {
+  width: 60px; height: 60px; border-radius: 50%;
+  background: #C4622D;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; position: relative; z-index: 1;
+}
+
+/* ── Marquee strip ── */
+.marquee-strip {
+  background: #C4622D; overflow: hidden; padding: 14px 0;
+}
+.marquee-inner {
+  display: flex; width: max-content;
+  animation: marquee 30s linear infinite;
+}
+.marquee-item {
+  display: inline-flex; align-items: center; gap: 20px;
+  padding: 0 28px;
+  font-size: 13px; font-weight: 500; letter-spacing: 0.08em;
+  text-transform: uppercase; color: #fff; white-space: nowrap;
+}
+.marquee-dot { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,0.5); }
+
+/* ── Sections ── */
+.sec { padding: 100px 60px; }
+.sec-green  { background: #1C3A2E; }
+.sec-cream  { background: #FAF7F2; }
+.sec-warm   { background: #F3EDE3; }
+.sec-pale-g { background: #EBF2EE; }
+
+/* ── Tag pill ── */
+.pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: #EBF2EE; color: #1C3A2E;
+  font-size: 11px; font-weight: 500; letter-spacing: 0.1em;
+  text-transform: uppercase; padding: 7px 14px; border-radius: 40px;
+  margin-bottom: 24px;
+}
+.pill-terra { background: #FAF0E8; color: #C4622D; }
+.pill-white { background: rgba(250,247,242,0.15); color: rgba(250,247,242,0.8); }
+
+/* ── Section headings ── */
+.sec-h {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(38px, 4.5vw, 64px);
+  font-weight: 900; line-height: 1.05; letter-spacing: -0.03em;
+  color: #1A1A1A;
+}
+.sec-h-white { color: #FAF7F2; }
+.sec-h em { font-style: italic; color: #C4622D; }
+.sec-h em.sage { color: #7A9E8E; }
+
+.sec-body {
+  font-size: 16px; font-weight: 300; line-height: 1.85;
+  color: rgba(26,26,26,0.58);
+}
+.sec-body-white { color: rgba(250,247,242,0.6); }
+
+/* ── About ── */
+.about-grid {
+  display: grid; grid-template-columns: 1fr 1.1fr;
+  gap: 72px; align-items: center; max-width: 1200px; margin: 0 auto;
+}
+.about-img-wrap {
+  position: relative;
+}
+.about-img {
+  width: 100%; aspect-ratio: 4/5;
+  background: linear-gradient(135deg, #2A5242, #1C3A2E);
+  border-radius: 24px; overflow: hidden;
+  position: relative;
+}
+.about-img-overlay {
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at 35% 25%, rgba(196,98,45,0.2) 0%, transparent 60%);
+}
+.about-img-ph {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 12px; opacity: 0.3;
+  font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase;
+  color: #FAF7F2;
+}
+.about-exp-badge {
+  position: absolute; bottom: 24px; left: -24px;
+  background: #C4622D; border-radius: 20px;
+  padding: 20px 28px; display: flex; gap: 14px; align-items: center;
+  box-shadow: 0 20px 60px rgba(196,98,45,0.35);
+}
+.exp-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 52px; font-weight: 900; color: #fff; line-height: 1;
+}
+.exp-text { font-size: 13px; font-weight: 300; color: rgba(255,255,255,0.8); line-height: 1.4; }
+
+.timeline { margin-top: 40px; display: flex; flex-direction: column; gap: 0; }
+.tl-item {
+  display: flex; gap: 20px; padding: 24px 0;
+  border-bottom: 1px solid rgba(28,58,46,0.1);
+}
+.tl-item:last-child { border-bottom: none; }
+.tl-dot {
+  width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; margin-top: 2px;
+}
+.tl-dot-g { background: #EBF2EE; }
+.tl-dot-t { background: #FAF0E8; }
+.tl-content h4 {
+  font-family: 'Playfair Display', serif;
+  font-size: 17px; font-weight: 700; color: #1A1A1A;
+  margin-bottom: 4px;
+}
+.tl-content p { font-size: 14px; font-weight: 300; color: rgba(26,26,26,0.55); line-height: 1.7; }
+
+/* ── Approach cards ── */
+.approach-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 20px; max-width: 1200px; margin: 48px auto 0;
+}
+.app-card {
+  background: #FAF7F2;
+  border-radius: 20px; padding: 40px 32px;
+  position: relative; overflow: hidden;
+  transition: transform 0.3s, box-shadow 0.3s;
+  border: 1px solid rgba(28,58,46,0.06);
+}
+.app-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 24px 64px rgba(28,58,46,0.12);
+}
+.app-card-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 70px; font-weight: 900;
+  color: rgba(28,58,46,0.06); line-height: 1;
+  position: absolute; top: 16px; right: 20px;
+}
+.app-card-icon {
+  width: 56px; height: 56px; border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; margin-bottom: 20px;
+}
+.ic-g { background: #EBF2EE; }
+.ic-t { background: #FAF0E8; }
+.ic-s { background: #F0EBF5; }
+.app-card h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px; font-weight: 700; color: #1A1A1A;
+  margin-bottom: 12px;
+}
+.app-card p { font-size: 14px; font-weight: 300; line-height: 1.8; color: rgba(26,26,26,0.55); }
+.app-card-tag {
+  display: inline-block; margin-top: 20px;
+  background: #EBF2EE; color: #1C3A2E;
+  font-size: 10px; font-weight: 500; letter-spacing: 0.1em;
+  text-transform: uppercase; padding: 5px 12px; border-radius: 20px;
+}
+.app-card-tag.t { background: #FAF0E8; color: #C4622D; }
+.app-card-tag.s { background: #F0EBF5; color: #6B4E8A; }
+
+/* ── Testimonials ── */
+.t-slider-mask {
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 8%, #000 92%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0%, #000 8%, #000 92%, transparent 100%);
+}
+.t-slider-track {
+  display: flex; gap: 20px; width: max-content;
+  animation: marquee 65s linear infinite;
+}
+.t-slider-track:hover { animation-play-state: paused; }
+
+.tc {
+  width: 300px; flex-shrink: 0;
+  background: rgba(250,247,242,0.07); border: 1px solid rgba(250,247,242,0.12);
+  border-radius: 20px; padding: 28px 24px;
+  transition: background 0.3s, border-color 0.3s;
+}
+.tc:hover { background: rgba(250,247,242,0.12); border-color: rgba(250,247,242,0.22); }
+.tc-top { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.tc-av {
+  width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Playfair Display', serif;
+  font-size: 18px; font-weight: 700; color: #FAF7F2;
+}
+.tc-name { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; color: #FAF7F2; }
+.tc-role { font-size: 11px; font-weight: 300; color: rgba(250,247,242,0.45); }
+.tc-stars { color: #C4622D; font-size: 11px; letter-spacing: 2px; margin-bottom: 12px; }
+.tc-text { font-size: 13px; font-weight: 300; line-height: 1.85; color: rgba(250,247,242,0.55); }
+.tc-badge {
+  display: inline-block; margin-top: 16px;
+  background: rgba(196,98,45,0.2); color: #D97B47;
+  font-size: 9px; font-weight: 500; letter-spacing: 0.2em;
+  text-transform: uppercase; padding: 4px 10px; border-radius: 20px;
+}
+
+/* ── Book ── */
+.book-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 72px; max-width: 1200px; margin: 0 auto;
+  align-items: start;
+}
+.book-info { padding-top: 24px; }
+.book-highlights { margin-top: 36px; display: flex; flex-direction: column; gap: 16px; }
+.bh {
+  display: flex; gap: 14px; align-items: flex-start;
+  padding: 20px; background: #FAF7F2;
+  border-radius: 14px; border: 1px solid rgba(28,58,46,0.08);
+}
+.bh-icon {
+  width: 40px; height: 40px; border-radius: 12px; flex-shrink: 0;
+  background: #EBF2EE; display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+}
+.bh h4 { font-size: 14px; font-weight: 600; color: #1A1A1A; margin-bottom: 2px; }
+.bh p  { font-size: 13px; font-weight: 300; color: rgba(26,26,26,0.55); }
+
+.book-form-wrap {
+  background: #fff; border-radius: 24px;
+  padding: 44px; border: 1px solid rgba(28,58,46,0.1);
+  box-shadow: 0 24px 80px rgba(28,58,46,0.08);
+}
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form-grp { display: flex; flex-direction: column; gap: 6px; margin-bottom: 18px; }
+.form-grp.full { grid-column: 1 / -1; }
+.form-lbl { font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: #1C3A2E; }
+.form-inp {
+  padding: 13px 16px;
+  background: #FAF7F2; border: 1.5px solid rgba(28,58,46,0.12);
+  border-radius: 12px; outline: none;
+  font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 300; color: #1A1A1A;
+  transition: border-color 0.3s, box-shadow 0.3s;
+  width: 100%;
+}
+.form-inp:focus { border-color: #1C3A2E; box-shadow: 0 0 0 3px rgba(28,58,46,0.08); }
+.form-inp::placeholder { color: rgba(26,26,26,0.3); }
+.form-inp option { background: #fff; color: #1A1A1A; }
+.form-submit {
+  width: 100%; padding: 15px; border: none; border-radius: 40px;
+  background: #1C3A2E; color: #FAF7F2;
+  font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 500;
+  letter-spacing: 0.04em; cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+  margin-top: 8px;
+}
+.form-submit:hover { background: #C4622D; transform: translateY(-2px); }
+.form-note { font-size: 12px; font-weight: 300; color: rgba(26,26,26,0.4); text-align: center; margin-top: 14px; }
+
+/* ── Footer ── */
+footer { background: #1A1A1A; padding: 64px 60px 36px; }
+.footer-grid {
+  display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr;
+  gap: 48px; max-width: 1200px; margin: 0 auto 52px;
+}
+.footer-logo { font-family:'Playfair Display',serif; font-size:26px; font-weight:700; color:#FAF7F2; text-decoration:none; }
+.footer-logo span { color:#C4622D; }
+.footer-desc { font-size:14px; font-weight:300; line-height:1.8; color:rgba(250,247,242,0.45); margin-top:16px; }
+.footer-col h5 { font-size:12px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:rgba(250,247,242,0.5); margin-bottom:20px; }
+.footer-col ul { list-style:none; display:flex; flex-direction:column; gap:12px; }
+.footer-col a { font-size:14px; font-weight:300; color:rgba(250,247,242,0.55); text-decoration:none; transition:color 0.25s; }
+.footer-col a:hover { color:#C4622D; }
+.footer-bottom { max-width:1200px; margin:0 auto; padding-top:28px; border-top:1px solid rgba(250,247,242,0.08); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
+.footer-bottom p { font-size:12px; font-weight:300; color:rgba(250,247,242,0.3); }
+.socials { display:flex; gap:10px; }
+.soc {
+  width:36px; height:36px; border-radius:10px;
+  border:1px solid rgba(250,247,242,0.12);
+  display:flex; align-items:center; justify-content:center;
+  color:rgba(250,247,242,0.45); text-decoration:none; font-size:13px; font-weight:500;
+  transition:all 0.3s;
+}
+.soc:hover { border-color:#C4622D; color:#C4622D; background:rgba(196,98,45,0.1); }
+
+/* ── Reveal ── */
+.rv { opacity:0; transform:translateY(24px); transition:opacity 0.8s ease, transform 0.8s ease; }
+.rv.on { opacity:1; transform:translateY(0); }
+.rv.d1 { transition-delay:0.1s; }
+.rv.d2 { transition-delay:0.2s; }
+.rv.d3 { transition-delay:0.3s; }
+.rv.d4 { transition-delay:0.4s; }
+.rv.d5 { transition-delay:0.5s; }
+
+/* ── Success ── */
+#formSuccess {
+  display:none; text-align:center; padding:48px 32px;
+}
+
+@media(max-width:900px){
+  .nav { padding:16px 20px; }
+  .nav-links { display:none; }
+  #hero { grid-template-columns:1fr; min-height:auto; }
+  .hero-right { height:320px; }
+  .hero-left { padding:80px 24px 48px; }
+  .sec { padding:72px 24px; }
+  .about-grid, .book-grid, .footer-grid { grid-template-columns:1fr; gap:36px; }
+  .approach-grid { grid-template-columns:1fr; }
+  .form-row { grid-template-columns:1fr; }
+  .form-grp.full { grid-column:1; }
+  footer { padding:48px 24px 28px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════ NAV ═══════════════════════ -->
+<nav class="nav">
+  <a href="#hero" class="nav-logo">Lumina<span>.</span></a>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#approach">Approach</a></li>
+    <li><a href="#testimonials">Stories</a></li>
+    <li><a href="#book">Book</a></li>
+  </ul>
+  <a href="#book" class="nav-btn">Book Session</a>
+</nav>
+
+
+<!-- ═══════════════════════ HERO ═══════════════════════ -->
+<section id="hero">
+
+  <!-- Left -->
+  <div class="hero-left" style="animation: fadeUp 1s ease both;">
+    <div class="hero-tag">Transformation Coaching</div>
+
+    <h1 class="hero-h1">
+      Unlock the<br/>
+      Person You<br/>
+      Were <em>Born</em> to Be
+    </h1>
+
+    <p class="hero-desc">
+      A transformation coach architects an entirely new version of you — through integrated work across mind, body, and soul that creates change which lasts not weeks, but lifetimes.
+    </p>
+
+    <div class="hero-actions">
+      <a href="#book" class="btn-fill">Book a Free Call →</a>
+      <a href="#about" class="btn-border">Learn More</a>
+    </div>
+
+    <!-- Trust row -->
+    <div style="display:flex;align-items:center;gap:20px;margin-top:48px;padding-top:36px;border-top:1px solid rgba(28,58,46,0.1);">
+      <div style="display:flex;margin-right:4px;">
+        <div style="width:36px;height:36px;border-radius:50%;background:#7A9E8E;border:2px solid #FAF7F2;display:flex;align-items:center;justify-content:center;font-size:14px;margin-right:-8px;z-index:3;">👩</div>
+        <div style="width:36px;height:36px;border-radius:50%;background:#C4622D;border:2px solid #FAF7F2;display:flex;align-items:center;justify-content:center;font-size:14px;margin-right:-8px;z-index:2;">👨</div>
+        <div style="width:36px;height:36px;border-radius:50%;background:#1C3A2E;border:2px solid #FAF7F2;display:flex;align-items:center;justify-content:center;font-size:14px;z-index:1;">🧑</div>
+      </div>
+      <div>
+        <div style="font-size:13px;font-weight:500;color:#1A1A1A;">Trusted by 1,000+ people</div>
+        <div style="font-size:12px;font-weight:300;color:rgba(26,26,26,0.5);">across 30 years of transformative coaching</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right -->
+  <div class="hero-right">
+    <div class="hero-right-inner">
+      <!-- Rotating badge -->
+      <div class="hero-badge">
+        <div class="badge-ring" style="font-size:8px;">★ &nbsp; TRANSFORM &nbsp; ★ &nbsp; EVOLVE &nbsp; ★ &nbsp; GROW &nbsp;</div>
+        <div class="badge-center">✨</div>
+      </div>
+
+      <!-- Big quote -->
+      <div style="margin-bottom:32px;">
+        <div style="font-family:'Playfair Display',serif;font-size:60px;color:rgba(250,247,242,0.08);line-height:1;margin-bottom:-12px;">"</div>
+        <p style="font-family:'Playfair Display',serif;font-size:clamp(20px,2.5vw,28px);font-weight:400;font-style:italic;color:rgba(250,247,242,0.85);line-height:1.4;">
+          The greatest revolution of our generation is the discovery that human beings can alter their lives by altering their minds.
+        </p>
+        <div style="font-size:12px;font-weight:300;color:rgba(250,247,242,0.35);margin-top:12px;letter-spacing:0.05em;">— William James</div>
+      </div>
+
+      <!-- Stats -->
+      <div class="hero-stats">
+        <div class="h-stat">
+          <div class="h-stat-num">30<span>+</span></div>
+          <div class="h-stat-label">Years of experience</div>
+        </div>
+        <div class="h-stat">
+          <div class="h-stat-num">1K<span>+</span></div>
+          <div class="h-stat-label">Lives transformed</div>
+        </div>
+        <div class="h-stat">
+          <div class="h-stat-num">98<span>%</span></div>
+          <div class="h-stat-label">Client satisfaction</div>
+        </div>
+        <div class="h-stat">
+          <div class="h-stat-num">3<span>x</span></div>
+          <div class="h-stat-label">Pillars: Mind, Body, Soul</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════ MARQUEE ═══════════════════════ -->
+<div class="marquee-strip">
+  <div class="marquee-inner" id="marqueeInner"></div>
+</div>
+
+
+<!-- ═══════════════════════ ABOUT ═══════════════════════ -->
+<section id="about" class="sec sec-cream">
+  <div class="about-grid">
+    <!-- Image col -->
+    <div class="rv">
+      <div class="about-img-wrap" style="padding-bottom:28px;">
+        <div class="about-img">
+          <div class="about-img-overlay"></div>
+          <div class="about-img-ph">
+            <span style="font-size:88px;">🧘</span>
+            <span>Your Photo Here</span>
+          </div>
+        </div>
+        <div class="about-exp-badge">
+          <div class="exp-num">30</div>
+          <div class="exp-text">Years of<br/>Transforming<br/>Lives</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Text col -->
+    <div class="rv d2">
+      <div class="pill">About Me</div>
+      <h2 class="sec-h" style="margin-bottom:20px;">
+        I Help You Become<br/><em>Unstoppable</em>
+      </h2>
+      <p class="sec-body" style="margin-bottom:20px;">
+        For over <strong style="color:#1A1A1A;font-weight:600;">30 years</strong>, I've dedicated my life to the sacred art of human transformation. Not surface-level fixes — bone-deep, lasting change that ripples through every corner of your life.
+      </p>
+      <p class="sec-body" style="margin-bottom:32px;">
+        I've guided <strong style="color:#1A1A1A;font-weight:600;">over 1,000 individuals</strong> — executives, athletes, parents, artists — through some of the most profound shifts of their lives. My method fuses neuroscience, ancient wisdom, somatic practice, and decades of refined intuition.
+      </p>
+
+      <div class="timeline">
+        <div class="tl-item rv d1">
+          <div class="tl-dot tl-dot-g">🧠</div>
+          <div class="tl-content">
+            <h4>Mind — Reprogram & Rewire</h4>
+            <p>Dismantle limiting beliefs and build a mindset that propels you forward every single day.</p>
+          </div>
+        </div>
+        <div class="tl-item rv d2">
+          <div class="tl-dot tl-dot-t">💪</div>
+          <div class="tl-content">
+            <h4>Body — Embody & Energize</h4>
+            <p>Build vitality through movement, breathwork and somatic practices that honor your whole being.</p>
+          </div>
+        </div>
+        <div class="tl-item rv d3">
+          <div class="tl-dot tl-dot-g">✨</div>
+          <div class="tl-content">
+            <h4>Soul — Align & Activate</h4>
+            <p>Discover your deepest purpose and build a spiritual foundation that sustains all growth.</p>
+          </div>
+        </div>
+      </div>
+
+      <a href="#book" class="btn-fill" style="margin-top:36px;display:inline-flex;">Start Your Journey →</a>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════ APPROACH ═══════════════════════ -->
+<section id="approach" class="sec sec-pale-g">
+  <div style="max-width:1200px;margin:0 auto;">
+    <div class="rv" style="text-align:center;max-width:600px;margin:0 auto 0;">
+      <div class="pill" style="justify-content:center;display:inline-flex;">My Approach</div>
+      <h2 class="sec-h" style="margin-bottom:16px;">How I Will <em>Transform</em> You</h2>
+      <p class="sec-body" style="max-width:500px;margin:0 auto;">Six deeply integrated pillars that work together to create holistic, lasting evolution across every dimension of your life.</p>
+    </div>
+
+    <div class="approach-grid">
+      <div class="app-card rv d1">
+        <div class="app-card-num">01</div>
+        <div class="app-card-icon ic-g">🧠</div>
+        <h3>Mental Mastery</h3>
+        <p>We reprogram limiting beliefs, dissolve self-sabotage, and build an unshakeable mindset through neurolinguistic techniques and mindfulness practice.</p>
+        <span class="app-card-tag">Mind</span>
+      </div>
+      <div class="app-card rv d2">
+        <div class="app-card-num">02</div>
+        <div class="app-card-icon ic-t">💪</div>
+        <h3>Physical Embodiment</h3>
+        <p>Intentional movement, breathwork, and somatic practices that build strength, vitality, and a deep mind-body connection that sustains transformation.</p>
+        <span class="app-card-tag t">Body</span>
+      </div>
+      <div class="app-card rv d3">
+        <div class="app-card-num">03</div>
+        <div class="app-card-icon ic-s">✨</div>
+        <h3>Soul Alignment</h3>
+        <p>Explore your core essence, clarify life's direction, and build a spiritual foundation rooted in your deepest values and authentic purpose.</p>
+        <span class="app-card-tag s">Soul</span>
+      </div>
+      <div class="app-card rv d2">
+        <div class="app-card-num">04</div>
+        <div class="app-card-icon ic-g">🎯</div>
+        <h3>Life Design</h3>
+        <p>Architect your ideal life — relationships, career, habits and daily rituals — all aligned to support your highest version and accelerate your progress.</p>
+        <span class="app-card-tag">Mind</span>
+      </div>
+      <div class="app-card rv d3">
+        <div class="app-card-num">05</div>
+        <div class="app-card-icon ic-t">🔗</div>
+        <h3>Integration Work</h3>
+        <p>Build the systems, accountability structures and daily practices that turn breakthroughs into your permanent new baseline for living.</p>
+        <span class="app-card-tag t">Body</span>
+      </div>
+      <div class="app-card rv d4">
+        <div class="app-card-num">06</div>
+        <div class="app-card-icon ic-s">🌿</div>
+        <h3>Ongoing Evolution</h3>
+        <p>Growth is a lifelong journey, not a destination. I walk beside you celebrating milestones and continuously elevating your ceiling of possibility.</p>
+        <span class="app-card-tag s">Soul</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════ TESTIMONIALS ═══════════════════════ -->
+<section id="testimonials" class="sec sec-green" style="padding-left:0;padding-right:0;padding-bottom:72px;">
+  <div style="padding:0 60px;max-width:1200px;margin:0 auto 52px;">
+    <div class="rv" style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:24px;">
+      <div>
+        <div class="pill pill-white" style="margin-bottom:18px;">Transformation Stories</div>
+        <h2 class="sec-h sec-h-white">Voices of <em class="sage">Change</em></h2>
+      </div>
+      <p class="sec-body-white" style="max-width:340px;font-size:14px;">
+        Real people. Real transformation. Hover the slider to pause and read.
+      </p>
+    </div>
+  </div>
+
+  <div class="t-slider-mask">
+    <div class="t-slider-track" id="testimonialTrack"></div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════ BOOK NOW ═══════════════════════ -->
+<section id="book" class="sec sec-warm">
+  <div class="book-grid">
+    <!-- Left info -->
+    <div class="book-info rv">
+      <div class="pill pill-terra">Book a Session</div>
+      <h2 class="sec-h" style="margin-bottom:16px;">
+        Begin Your<br/><em>Journey</em> Today
+      </h2>
+      <p class="sec-body" style="margin-bottom:8px;">
+        Every extraordinary transformation begins with one courageous step. Fill in your details and I'll personally reach out within 24 hours.
+      </p>
+
+      <div class="book-highlights">
+        <div class="bh rv d1">
+          <div class="bh-icon">🕐</div>
+          <div>
+            <h4>Free Discovery Call</h4>
+            <p>Your first session is a no-obligation conversation to explore if we're the right fit.</p>
+          </div>
+        </div>
+        <div class="bh rv d2">
+          <div class="bh-icon">🔒</div>
+          <div>
+            <h4>Completely Confidential</h4>
+            <p>Everything shared stays between us. Your privacy is sacred and protected always.</p>
+          </div>
+        </div>
+        <div class="bh rv d3">
+          <div class="bh-icon">🌍</div>
+          <div>
+            <h4>In-Person or Online</h4>
+            <p>Sessions available worldwide via video call or in-person at our dedicated studio.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right form -->
+    <div class="rv d2">
+      <div class="book-form-wrap">
+        <h3 style="font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:#1A1A1A;margin-bottom:28px;">Book Your Session</h3>
+
+        <div id="bookForm">
+          <div class="form-row">
+            <div class="form-grp">
+              <label class="form-lbl">First Name</label>
+              <input id="fname" type="text" placeholder="Your first name" class="form-inp"/>
+            </div>
+            <div class="form-grp">
+              <label class="form-lbl">Last Name</label>
+              <input id="lname" type="text" placeholder="Your last name" class="form-inp"/>
+            </div>
+          </div>
+
+          <div class="form-grp">
+            <label class="form-lbl">Email Address</label>
+            <input id="femail" type="email" placeholder="your@email.com" class="form-inp"/>
+          </div>
+
+          <div class="form-grp">
+            <label class="form-lbl">Phone (Optional)</label>
+            <input id="fphone" type="tel" placeholder="+1 (555) 000-0000" class="form-inp"/>
+          </div>
+
+          <div class="form-grp">
+            <label class="form-lbl">Area of Focus</label>
+            <select id="farea" class="form-inp">
+              <option value="" disabled selected>What do you need help with?</option>
+              <option>Mind — Mental clarity, beliefs &amp; mindset</option>
+              <option>Body — Physical health, energy &amp; vitality</option>
+              <option>Soul — Purpose, meaning &amp; alignment</option>
+              <option>Relationships &amp; Connection</option>
+              <option>Career &amp; Life Direction</option>
+              <option>Complete Holistic Transformation</option>
+              <option>Not sure yet — I need guidance</option>
+            </select>
+          </div>
+
+          <div class="form-grp">
+            <label class="form-lbl">Tell Me About You</label>
+            <textarea id="fdesc" rows="4" placeholder="Share where you are, what challenges you face, and the transformation you're seeking..." class="form-inp" style="resize:vertical;"></textarea>
+          </div>
+
+          <button class="form-submit" onclick="submitForm()">Send My Request →</button>
+          <p class="form-note">I personally review every message and respond within 24 hours.</p>
+        </div>
+
+        <div id="formSuccess">
+          <div style="font-size:52px;margin-bottom:16px;">🌱</div>
+          <h3 style="font-family:'Playfair Display',serif;font-size:26px;font-weight:700;color:#1C3A2E;margin-bottom:12px;">Your Journey Begins!</h3>
+          <p style="font-size:15px;font-weight:300;color:rgba(26,26,26,0.55);line-height:1.7;">Thank you for reaching out. I've received your request and will be in touch within 24 hours to discuss how we'll transform your life together.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════ FOOTER ═══════════════════════ -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <a href="#hero" class="footer-logo">Lumina<span>.</span></a>
+      <p class="footer-desc">Transforming minds, bodies, and souls for over 30 years. Over 1,000 lives changed and counting.</p>
+      <div class="socials" style="margin-top:24px;">
+        <a href="#" class="soc">in</a>
+        <a href="#" class="soc">ig</a>
+        <a href="#" class="soc">yt</a>
+        <a href="#" class="soc">fb</a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h5>Navigate</h5>
+      <ul>
+        <li><a href="#hero">Home</a></li>
+        <li><a href="#about">About Me</a></li>
+        <li><a href="#approach">My Approach</a></li>
+        <li><a href="#testimonials">Stories</a></li>
+        <li><a href="#book">Book a Session</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h5>Pillars</h5>
+      <ul>
+        <li><a href="#approach">Mental Mastery</a></li>
+        <li><a href="#approach">Physical Embodiment</a></li>
+        <li><a href="#approach">Soul Alignment</a></li>
+        <li><a href="#approach">Life Design</a></li>
+        <li><a href="#approach">Integration Work</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h5>Contact</h5>
+      <ul>
+        <li><a href="mailto:hello@lumina.coach">hello@lumina.coach</a></li>
+        <li><a href="tel:+15550001234">+1 (555) 000-1234</a></li>
+        <li><a href="#">Studio — New York, NY</a></li>
+        <li><a href="#book">Book a Call</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2025 Lumina Transformation Coaching. All rights reserved.</p>
+    <p>Privacy Policy &nbsp;·&nbsp; Terms of Service</p>
+  </div>
+</footer>
+
+
+<!-- ═══════════════════════ JS ═══════════════════════ -->
+<script>
+// ── Marquee content ──────────────────────────────────────────
+const marqueeItems = ['Mind','Body','Soul','Transformation','Clarity','Purpose','Growth','Evolution','Strength','Alignment','Vitality','Breakthrough'];
+const mi = document.getElementById('marqueeInner');
+const allItems = [...marqueeItems,...marqueeItems,...marqueeItems,...marqueeItems];
+mi.innerHTML = allItems.map(t=>`<span class="marquee-item">${t}<span class="marquee-dot"></span></span>`).join('');
+
+// ── Testimonials data ─────────────────────────────────────────
+const testimonials = [
+  { n:'Sarah M.',   r:'Executive, 42',       a:'S', bg:'#2A5242', tag:'Mind', s:5, t:'Working with this coach fundamentally changed how I lead my team and live my life. The mental clarity I have gained is worth every single moment invested.' },
+  { n:'James R.',   r:'Athlete, 28',         a:'J', bg:'#C4622D', tag:'Body', s:5, t:'I came seeking physical performance and left with a completely transformed relationship with my body, my purpose, and my potential. Truly life-changing.' },
+  { n:'Amara K.',   r:'Artist, 35',          a:'A', bg:'#6B4E8A', tag:'Soul', s:5, t:'I was creatively blocked and spiritually lost. This journey reconnected me to my authentic self in ways I never thought possible for someone like me.' },
+  { n:'David L.',   r:'Entrepreneur, 50',    a:'D', bg:'#7A5C3A', tag:'Mind', s:5, t:'Thirty years of experience is evident in every session. The depth of insight, the precision of guidance — nothing else has come close to this level.' },
+  { n:'Priya S.',   r:'Doctor, 38',          a:'P', bg:'#3A6B6B', tag:'Body', s:5, t:'I help others heal every day but had neglected my own wellbeing for years. This coaching gave me tools and the permission to finally prioritize myself.' },
+  { n:'Marcus T.',  r:'Father of 3, 45',     a:'M', bg:'#5C6B3A', tag:'Soul', s:5, t:'Transformation coaching is not just for people in crisis. It is for anyone who knows they are capable of so much more and wants to finally live it fully.' },
+  { n:'Elena V.',   r:'Teacher, 33',         a:'E', bg:'#3A5C6B', tag:'Mind', s:5, t:'The breakthrough I had in just three sessions took me years of therapy to approach. The holistic method addresses what other approaches consistently miss.' },
+  { n:'Robert C.',  r:'Military, 55',        a:'R', bg:'#6B3A3A', tag:'Body', s:5, t:'After decades of physical and mental strain, I needed someone who understood transformation at its deepest level. I found that and so much more here.' },
+  { n:'Nadia O.',   r:'Designer, 29',        a:'N', bg:'#3A3A6B', tag:'Soul', s:5, t:'Young, ambitious, and completely burned out. This coaching helped me redesign my entire relationship with ambition, success, and authentic purpose in life.' },
+  { n:'Thomas A.',  r:'CEO, 48',             a:'T', bg:'#4A6B3A', tag:'Mind', s:5, t:'The ROI on this investment has been immeasurable. A clearer mind, a stronger body, and a centered spirit made me a better leader, father, and human.' },
+  { n:'Lisa W.',    r:'Therapist, 41',       a:'L', bg:'#6B3A5C', tag:'Soul', s:5, t:'As someone in the helping profession I was skeptical. The depth of self-knowledge this coaching unlocked has made me a profoundly better practitioner.' },
+  { n:'Kevin B.',   r:'Writer, 37',          a:'K', bg:'#3A6B4A', tag:'Body', s:5, t:'I came with a creative block and left with a completely new relationship with my body, my stories, and my sense of what is truly possible in this life.' },
+  { n:'Fatima H.',  r:'Coach & Mother, 44',  a:'F', bg:'#6B5A3A', tag:'Mind', s:5, t:'This coaching gave me the language, the practices, and the courage to finally live a life that truly matches my deepest values and sense of who I am.' },
+  { n:'Daniel M.',  r:'Surgeon, 52',         a:'D', bg:'#3A5A6B', tag:'Body', s:5, t:'High-performing professionals often sacrifice everything for success. This coaching taught me that true excellence must include the whole person, always.' },
+  { n:'Sofia A.',   r:'Dancer, 26',          a:'S', bg:'#6B3A40', tag:'Soul', s:5, t:'At 26 I thought I knew who I was. The coaching cracked me open in the best possible way, revealing a depth and purpose I never knew existed within.' },
+  { n:'Andre P.',   r:'Coach, 47',           a:'A', bg:'#4A3A6B', tag:'Mind', s:5, t:'Even as a coach myself, I needed someone at a higher level. This experience elevated both my personal life and my ability to guide others through change.' },
+  { n:'Maya S.',    r:'Founder, 31',         a:'M', bg:'#6B4A3A', tag:'Body', s:5, t:'The energy and mental bandwidth I have gained through this work has been the single most impactful investment in my startup journey, full stop.' },
+  { n:'George F.',  r:'Grandfather, 63',     a:'G', bg:'#3A6B3A', tag:'Soul', s:5, t:'At 63 I was told transformation takes a lifetime. I changed more in six months of this coaching than in the previous twenty years. It is never too late.' },
+  { n:'Hannah J.',  r:'Nurse, 34',           a:'H', bg:'#5A3A6B', tag:'Mind', s:5, t:'I gave so much of myself to others that I had forgotten who I was. This work gave me back to myself and showed me how to sustain that without guilt.' },
+  { n:'Carlos E.',  r:'Musician, 39',        a:'C', bg:'#6B3A5A', tag:'Soul', s:5, t:'Transformation is not about becoming something new — it is about removing everything that was never truly you. This coaching mastered that distinction.' },
+];
+
+const track = document.getElementById('testimonialTrack');
+const doubled = [...testimonials, ...testimonials];
+track.innerHTML = doubled.map(t => `
+  <div class="tc">
+    <div class="tc-top">
+      <div class="tc-av" style="background:${t.bg};">${t.a}</div>
+      <div>
+        <div class="tc-name">${t.n}</div>
+        <div class="tc-role">${t.r}</div>
+      </div>
+    </div>
+    <div class="tc-stars">${'★'.repeat(t.s)}</div>
+    <p class="tc-text">${t.t}</p>
+    <span class="tc-badge">${t.tag}</span>
+  </div>
+`).join('');
+
+// ── Scroll Reveal ─────────────────────────────────────────────
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('on'); });
+}, { threshold: 0.07 });
+document.querySelectorAll('.rv').forEach(el => io.observe(el));
+
+// ── Smooth nav ────────────────────────────────────────────────
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    const t = document.querySelector(a.getAttribute('href'));
+    if(t){ e.preventDefault(); t.scrollIntoView({ behavior:'smooth' }); }
+  });
+});
+
+// ── Form submit ───────────────────────────────────────────────
+function submitForm(){
+  const fname = document.getElementById('fname').value.trim();
+  const email = document.getElementById('femail').value.trim();
+  const area  = document.getElementById('farea').value;
+  const desc  = document.getElementById('fdesc').value.trim();
+  if(!fname || !email || !area || !desc){
+    alert('Please fill in all required fields.'); return;
+  }
+  const form = document.getElementById('bookForm');
+  const suc  = document.getElementById('formSuccess');
+  form.style.opacity='0'; form.style.transition='opacity 0.4s';
+  setTimeout(()=>{
+    form.style.display='none';
+    suc.style.display='block'; suc.style.opacity='0'; suc.style.transition='opacity 0.7s';
+    setTimeout(()=>{ suc.style.opacity='1'; },30);
+  },420);
+}
+</script>
+</body>
+</html>
